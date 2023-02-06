@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "LambdaTriggerByS3Change": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development",
+        "OpenSearchEndpoint": "http://localhost:9200/",
+        "LocalLambdaTriggerByS3Change": "true"
+      }
+    }
+  }
+}
