@@ -1,0 +1,57 @@
+name: Projections
+
+on:
+  workflow_dispatch:
+      
+concurrency: 
+  group: ${{ github.workflow }}
+  cancel-in-progress: true
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  build-project:
+    name: Build Project
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout Latest Code
+      uses: actions/checkout@v3
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: '6.0.x'
+    - name: Install Dependencies
+      run: dotnet restore --runtime win-x64
+    - name: Build
+      run: dotnet publish --output artifacts
+    - name: Upload Artefact
+      uses: actions/upload-artifact@v3
+      with:
+        name: artifact
+        path: artifacts
+
+  deploy-to-aws:
+    name: Deploy to AWS Lambda
+    needs: build-project
+    runs-on: ubuntu-latest
+    steps:
+    - name: Download Artefact
+      uses: actions/download-artifact@v3
+      with:
+        name: artifact
+    - name: Zip Lambda Files
+      uses: vimtor/action-zip@v1
+      with:
+          files: /
+          dest: artifact.zip    
+    - name: Check Artefact Download
+      run: ls -R
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v1-node16
+      with:
+        role-to-assume: ${{ secrets.AWS_ROLE }}
+        aws-region: us-east-1
+    - name: Deploy Lambda
+      run: aws lambda update-function-code --function-name ${{ secrets.AWS_LAMBDA }} --zip-file fileb://artifact.zip --region us-east-1
