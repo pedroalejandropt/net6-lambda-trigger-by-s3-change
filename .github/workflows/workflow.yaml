@@ -1,4 +1,4 @@
-name: Projections
+name: DeployTriggerLambda
 
 on:
   workflow_dispatch:
