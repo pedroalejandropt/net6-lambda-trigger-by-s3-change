@@ -15,27 +15,23 @@ internal static class Program
 {
 	private static async Task Main()
 	{
-        //var openSearchEndpoint = Environment.GetEnvironmentVariable("OpenSearchEndpoint");
+        	var openSearchEndpoint = Environment.GetEnvironmentVariable("OpenSearchEndpoint");
 
-        //if (openSearchEndpoint is null)
-        //{
-        //    throw new ArgumentException("OpenSearchEndpoint must have a value.");
-        //}
-
-        //using (var singleNodeConnectionPool = new SingleNodeConnectionPool(new Uri(openSearchEndpoint)))
-        //{
-        //    using (var elasticConnectionSettings = new ConnectionSettings(singleNodeConnectionPool))
-        //    {
-                using (var amazonS3Client = new AmazonS3Client())
+        	if (openSearchEndpoint is null) throw new ArgumentException("OpenSearchEndpoint must have a value.");
+        
+        	using (var singleNodeConnectionPool = new SingleNodeConnectionPool(new Uri(openSearchEndpoint)))
+        	{
+            		using (var elasticConnectionSettings = new ConnectionSettings(singleNodeConnectionPool))
+            		{
+                		using (var amazonS3Client = new AmazonS3Client())
 				{
-					//var elasticClient = new ElasticClient(elasticConnectionSettings);
-					//using (var handler = new Handler(amazonS3Client, elasticClient))
-					using (var handler = new Handler(amazonS3Client))
-                    {
+					var elasticClient = new ElasticClient(elasticConnectionSettings);
+					using (var handler = new Handler(amazonS3Client, elasticClient))
+                    			{
 						await LambdaBootstrapBuilder.Create((Func<S3Event, Task>)handler.Run, new DefaultLambdaJsonSerializer()).Build().RunAsync();
 					}
 				}
-        //    }
-        //}
+           		 }
+        	}
 	}
 }
